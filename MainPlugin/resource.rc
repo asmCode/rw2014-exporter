@@ -1,0 +1,151 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Polish (Poland) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_PLK)
+LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
+#pragma code_page(1250)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MAIN DIALOGEX 0, 0, 310, 269
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
+CAPTION "Geo Exporter :: Futuris"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Export",IDC_EXPORT,253,246,50,14
+    CONTROL         "Geometry",IDC_CHX_GEOMETRY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,79,47,10
+    EDITTEXT        IDC_TXT_GEOMETRY,66,78,192,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Browse",IDC_BTN_BROWSE_GEOMETRY,264,78,30,12
+    CONTROL         "Animation",IDC_CHX_ANIMATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,104,47,10
+    EDITTEXT        IDC_TXT_ANIMATION,66,103,192,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Browse",IDC_BTN_BROWSE_ANIMATION,264,103,30,12
+    CONTROL         "Materials",IDC_CHX_MATERIALS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,129,45,10
+    EDITTEXT        IDC_TXT_MATERIALS,66,128,192,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Browse",IDC_BTN_BROWSE_MATERIALS,264,128,30,12
+    CONTROL         "Cameras",IDC_CHX_CAMERAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,154,44,10
+    EDITTEXT        IDC_TXT_CAMERAS,66,153,192,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Browse",IDC_BTN_BROWSE_CAMERAS,264,153,30,12
+    CONTROL         "Positions",IDC_CHX_POSITIONS,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,15,179,44,10
+    EDITTEXT        IDC_TXT_POSITIONS,66,178,192,12,ES_AUTOHSCROLL | WS_DISABLED
+    PUSHBUTTON      "Browse",IDC_BTN_BROWSE_POSITIONS,264,178,30,12,WS_DISABLED
+    PUSHBUTTON      "Cancel",IDC_CANCEL,197,246,50,14
+	CONTROL         103, IDC_STATIC, "Static", SS_BITMAP, 0, 0, 312, 33
+    LTEXT           "ver: alpha 1.0",IDC_STATIC,2,260,46,8
+    GROUPBOX        "Export",IDC_STATIC,7,66,294,162
+    CONTROL         "",IDC_PRG_GEOMETRY,"msctls_progress32",WS_BORDER,66,91,192,6
+    CONTROL         "",IDC_PRG_POSITIONS,"msctls_progress32",WS_DISABLED | WS_BORDER,66,191,192,6
+    CONTROL         "",IDC_PRG_ANIMATION,"msctls_progress32",WS_DISABLED | WS_BORDER,66,116,192,6
+    CONTROL         "",IDC_PRG_MATERIALS,"msctls_progress32",WS_BORDER,66,141,192,6
+    CONTROL         "",IDC_PRG_CAMERAS,"msctls_progress32",WS_BORDER,66,166,192,6
+    CONTROL         "Lights",IDC_CHX_LIGHT,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,15,204,35,10
+    EDITTEXT        IDC_TXT_LIGHTS,66,202,192,12,ES_AUTOHSCROLL | WS_DISABLED
+    PUSHBUTTON      "Browse",IDC_BTN_BROWSE_LIGHTS,264,202,30,12,WS_DISABLED
+    CONTROL         "",IDC_PRG_LIGHTS,"msctls_progress32",WS_DISABLED | WS_BORDER,66,215,192,6
+    LTEXT           "Filename",IDC_STATIC,19,46,29,8
+    EDITTEXT        IDC_TXT_FILENAME,66,44,98,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Export Scene",IDC__EXPORT_SCENE,138,241,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_MAIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 303
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 262
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_SGM_LOGO            BITMAP                  "sgm_exp_logo.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_LIB_DESCRIPTION     "SGM Exporting Plugin, asmCode / Futuris"
+    IDS_CLASS_NAME          "SGMExporter"
+    IDS_EXTENSION           "sgm"
+    IDS_LONG_DESC           "SGM File Format (asmCode / Futuris)"
+    IDS_SHORT_DESC          "SGM File Format"
+    IDS_AUTHOR_NAME         "Szymon 'asmCode' Majewski"
+    IDS_COPYRIGHT_MESSAGE   "No copyright;)"
+    IDS_OTHER_MESSAGE1      "other message1"
+    IDS_OTHER_MESSAGE2      "other message2"
+END
+
+#endif    // Polish (Poland) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

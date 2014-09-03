@@ -1,0 +1,95 @@
+ to jakis kod do wyciagania custom attributes. Nie wiem jak sie dobrac do pojedynczych atrybutow. Mam dostep tylko do grupy.
+
+ do
+	{
+		INode *node = meshNode->GetMaxNode();
+		if (node == NULL)
+		{
+			log ->AddLog(sb() + "err: node is NULL");
+			break;
+		}
+	
+		BaseObject *baseObject = node->GetObjectRef();
+		if (baseObject == NULL)
+		{
+			log ->AddLog(sb() + "err: baseObject is NULL");
+			break;
+		}
+
+		//BASENODE_CLASS_ID
+		log ->AddLog(sb() + "super class id = " + std::hex + baseObject->SuperClassID());
+
+		ICustAttribContainer *custAttribs = baseObject->GetCustAttribContainer();
+		if (custAttribs == NULL)
+		{
+			log ->AddLog(sb() + "err: custAttribs is NULL");
+			break;
+		}
+
+		log ->AddLog(sb() + "SUCCESS!!");
+
+		CustAttrib *custAttrib = custAttribs->GetCustAttrib(0);
+
+		if (custAttrib == NULL)
+		{
+			log ->AddLog(sb() + "err: custAttrib is NULL");
+			break;
+		}
+
+		log ->AddLog(sb() + "params block count: " + custAttrib->NumParamBlocks());
+		IParamBlock2* pb = custAttrib->GetParamBlock(0);
+		if (pb == NULL)
+		{
+			log ->AddLog(sb() + "err: pb is NULL");
+			break;
+		}
+
+		ParamBlockDesc2 *ff = pb->GetDesc();
+		if (ff == NULL)
+		{
+			log ->AddLog(sb() + "ff: pb is NULL");
+			break;
+		}
+
+		pb->ReleaseDesc();
+
+		log ->AddLog(sb() + "SUCCESS22222!!" + ff->cd->ClassName());
+
+		log ->AddLog(sb() + "attrib name=" + custAttrib->GetName());
+		log ->AddLog(sb() + "super class id = " + std::hex + custAttrib->SuperClassID());
+
+		log ->AddLog(sb() + "sub anims = " + custAttrib->NumSubs());
+		log ->AddLog(sb() + "sub anim 0 name = " + custAttrib->SubAnimName(0));
+
+		log ->AddLog(sb() + "xxx = " + custAttrib->GetCustAttribContainer());
+
+		break;
+
+		log ->AddLog(sb() + "custom attribs count: " + custAttribs->GetNumCustAttribs());
+
+		for (int i = 0; i < custAttribs->GetNumCustAttribs(); i++)
+		{
+			CustAttrib *dd = custAttribs->GetCustAttrib(i);
+			if (dd != NULL)
+			{
+				log ->AddLog(sb() + "attrib " + i + ", name=" + dd->GetName());
+			}
+			else
+			{
+				log ->AddLog(sb() + "attrib " + i + "is null");
+			}
+		}
+	
+	} while (false);
+
+
+
+
+
+
+
+	////////////
+
+	char dupa[1000];
+		wsprintf(dupa, "initializing property dziwko: type=%d, anim=%d\n", m_propType, m_animType);
+		OutputDebugStringA(dupa);

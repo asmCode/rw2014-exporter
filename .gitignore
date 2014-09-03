@@ -1,0 +1,8 @@
+Debug/
+Release/
+*.user
+*.filters
+*.ncb
+*.suo
+*.ipch
+*.sdf
