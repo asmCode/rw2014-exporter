@@ -13,4 +13,5 @@ public:
 	virtual void ExportLights(IProgressObserver *progressObserver, const char *outputFilename) = 0;
 
 	virtual void ExportScene(IProgressObserver *progressObserver, const char *outputFilename) = 0;
+	virtual void ExportSkinnedMesh(IProgressObserver *progressObserver, const char *outputFilename) = 0;
 };

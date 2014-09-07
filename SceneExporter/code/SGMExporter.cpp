@@ -5,6 +5,8 @@
 #include "SceneElements/Destination.h"
 #include "SceneElements/Path.h"
 #include "SceneElements/Key.h"
+#include "SceneElements/IntKey.h"
+#include "SceneElements/Guy.h"
 #include "SceneElements/StaticSource.h"
 #include "SceneElements/StaticDestination.h"
 
@@ -127,29 +129,7 @@ bool SGMExporter::DoExport(const TCHAR *name, ExpInterface *ei, Interface *max_i
 
 		if (path != NULL)
 		{
-			xmlWriter.OpenElement("Path");
-
-			for (int j = 0; j < path->Keys.size(); j++)
-			{
-				Key* key = path->Keys[j];
-
-				char posTxt[128];
-				char rotTxt[128];
-				char scaleTxt[128];
-
-				sprintf(posTxt, "%f;%f;%f", key->Position.x, key->Position.y, key->Position.z);
-				sprintf(rotTxt, "%f;%f;%f,%f", key->Rotation.w, key->Rotation.x, key->Rotation.y, key->Rotation.z);
-				sprintf(scaleTxt, "%f;%f;%f", key->Scale.x, key->Scale.y, key->Scale.z);
-
-				xmlWriter.OpenElement("Key");
-				xmlWriter.WriteAttribute<float>("time", path->Keys[j]->Time);
-				xmlWriter.WriteAttribute<const char*>("position", posTxt);
-				//xmlWriter.WriteAttribute<const char*>("rotation", rotTxt);
-				//xmlWriter.WriteAttribute<const char*>("scale", scaleTxt);
-				xmlWriter.CloseElement();
-			}
-
-			xmlWriter.CloseElement();
+			WritePath(xmlWriter, path);
 		}
 		else
 			Log::LogT("Ribbon %s doesn't have path", it->first.c_str());
@@ -160,6 +140,7 @@ bool SGMExporter::DoExport(const TCHAR *name, ExpInterface *ei, Interface *max_i
 	xmlWriter.CloseElement(); // Ribbons
 
 	WriteStaticNodes(xmlWriter, staticNodes);
+	WriteGuys(xmlWriter);
 
 	xmlWriter.CloseElement(); // Scene
 
@@ -243,7 +224,7 @@ void SGMExporter::ProcessSceneElement(IGameNode* node)
 		}
 		else if (morphType == "path")
 		{
-			Path* path = ProcessPath(node, morphId);
+			Path* path = ProcessPath(node);
 			AddToRibbon(morphId, path);
 		}
 		else if (morphType == "dst-static")
@@ -256,6 +237,13 @@ void SGMExporter::ProcessSceneElement(IGameNode* node)
 			StaticSource* source = ProcessStaticSource(node, morphId);
 			AddToRibbon(morphId, source);
 		}
+	}
+	else if (nameParts[1] == "guy")
+	{
+		std::string guyId = nameParts[2];
+
+		Guy* guy = ProcessGuy(node, guyId);
+		AddToGuys(guy);
 	}
 }
 
@@ -319,6 +307,11 @@ void SGMExporter::AddToRibbon(const std::string& name, StaticDestination* destin
 	ribbon->StaticDestination = destination;
 }
 
+void SGMExporter::AddToGuys(Guy* guy)
+{
+	m_guys.push_back(guy);
+}
+
 Source* SGMExporter::ProcessSource(IGameNode* node, const std::string& id)
 {
 	Source* source = new Source();
@@ -347,7 +340,7 @@ StaticDestination* SGMExporter::ProcessStaticDestination(IGameNode* node, const 
 	return destination;
 }
 
-Path* SGMExporter::ProcessPath(IGameNode* node, const std::string& id)
+Path* SGMExporter::ProcessPath(IGameNode* node)
 {
 	Path* path = new Path();
 
@@ -360,6 +353,53 @@ Path* SGMExporter::ProcessPath(IGameNode* node, const std::string& id)
 	node->ReleaseIGameObject();
 
 	return path;
+}
+
+void SGMExporter::ProcessIntProperty(IGameNode* node, const std::string& name, std::vector<IntKey*>& keys)
+{
+	IGameObject* obj = node->GetIGameObject();
+	if (obj == NULL)
+		return;
+
+	IPropertyContainer* propsCointainer = obj->GetIPropertyContainer();
+	if (propsCointainer == NULL)
+		return;
+
+	IGameProperty *property = propsCointainer->QueryProperty(StringUtils::ToWide(name).c_str());
+	if (property == NULL)
+		return;
+
+	if (!property->IsPropAnimated())
+		return;
+
+	IGameControl *ctrl = property->GetIGameControl();
+	if (ctrl == NULL)
+		return;
+
+	IGameKeyTab gKeys;
+	if (ctrl->GetLinearKeys(gKeys, IGAME_FLOAT))
+	{
+		for (int i = 0; i < gKeys.Count(); i++)
+		{
+			IntKey* key = new IntKey();
+			key->Time = TicksToSec(gKeys[i].t);
+			key->Value = (int)gKeys[i].linearKey.fval;
+
+			keys.push_back(key);
+		}
+	}
+}
+
+Guy* SGMExporter::ProcessGuy(IGameNode* node, const std::string& guyId)
+{
+	Guy* guy = new Guy();
+
+	guy->Id = guyId;
+	guy->Path = ProcessPath(node);
+
+	ProcessIntProperty(node, "anim_index", guy->AnimationIndex);
+
+	return guy;
 }
 
 Ribbon* SGMExporter::GetRibbonByName(const std::string& name)
@@ -422,6 +462,41 @@ void SGMExporter::ExtractKeys(IGameControl *gControl, std::vector<Key*>& keys)
 	}
 }
 
+void SGMExporter::WritePath(XmlWriter& xml, Path* path)
+{
+	xml.OpenElement("Path");
+
+	for (int j = 0; j < path->Keys.size(); j++)
+	{
+		Key* key = path->Keys[j];
+
+		char posTxt[128];
+		char rotTxt[128];
+		char scaleTxt[128];
+
+		sprintf(posTxt, "%f;%f;%f", key->Position.x, key->Position.y, key->Position.z);
+		sprintf(rotTxt, "%f;%f;%f,%f", key->Rotation.w, key->Rotation.x, key->Rotation.y, key->Rotation.z);
+		sprintf(scaleTxt, "%f;%f;%f", key->Scale.x, key->Scale.y, key->Scale.z);
+
+		xml.OpenElement("Key");
+		xml.WriteAttribute<float>("time", path->Keys[j]->Time);
+		xml.WriteAttribute<const char*>("position", posTxt);
+		//xmlWriter.WriteAttribute<const char*>("rotation", rotTxt);
+		//xmlWriter.WriteAttribute<const char*>("scale", scaleTxt);
+		xml.CloseElement();
+	}
+
+	xml.CloseElement();
+}
+
+void SGMExporter::WriteIntKeys(XmlWriter& xml, std::vector<IntKey*>& keys)
+{
+	for (int i = 0; i < keys.size(); i++)
+	{
+		xml.CreateElement("Key", "time", keys[i]->Time, "value", keys[i]->Value);
+	}
+}
+
 void SGMExporter::WriteStaticNodes(XmlWriter& xml, const std::vector<IGameNode*>& staticNodes)
 {
 	xml.OpenElement("StaticMeshes");
@@ -437,6 +512,30 @@ void SGMExporter::WriteStaticNodes(XmlWriter& xml, const std::vector<IGameNode*>
 			xml.CreateElement("Static", "mesh_name", StringUtils::ToNarrow(node->GetName()));
 
 		node->ReleaseIGameObject();
+	}
+
+	xml.CloseElement();
+}
+
+void SGMExporter::WriteGuys(XmlWriter& xml)
+{
+	xml.OpenElement("Guys");
+
+	for (uint32_t i = 0; i < m_guys.size(); i++)
+	{
+		Guy* guy = m_guys[i];
+
+		xml.OpenElement("Guy");
+		xml.WriteAttribute("id", guy->Id.c_str());
+
+		if (guy->Path != NULL)
+			WritePath(xml, guy->Path);
+
+		xml.OpenElement("AnimationIndex");
+		WriteIntKeys(xml, guy->AnimationIndex);
+		xml.CloseElement();
+
+		xml.CloseElement();
 	}
 
 	xml.CloseElement();

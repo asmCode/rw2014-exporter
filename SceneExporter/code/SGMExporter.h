@@ -19,7 +19,9 @@ class Destination;
 class StaticSource;
 class StaticDestination;
 class Path;
+class Guy;
 class Key;
+class IntKey;
 class XmlWriter;
 
 class SGMExporter : public IExportInterface
@@ -41,12 +43,14 @@ private:
 	void StepProgress();
 
 	RibbonsMap m_ribbons;
+	std::vector<Guy*> m_guys;
 
 	void AddToRibbon(const std::string& name, Source* source);
 	void AddToRibbon(const std::string& name, Destination* destination);
 	void AddToRibbon(const std::string& name, Path* path);
 	void AddToRibbon(const std::string& name, StaticSource* source);
 	void AddToRibbon(const std::string& name, StaticDestination* destination);
+	void AddToGuys(Guy* guy);
 
 	void ProcessSceneElement(IGameNode* node);
 
@@ -54,14 +58,20 @@ private:
 	Destination* ProcessDestination(IGameNode* node, const std::string& id);
 	StaticSource* ProcessStaticSource(IGameNode* node, const std::string& id);
 	StaticDestination* ProcessStaticDestination(IGameNode* node, const std::string& id);
-	Path* ProcessPath(IGameNode* node, const std::string& id);
+	Path* ProcessPath(IGameNode* node);
+	void ProcessIntProperty(IGameNode* node, const std::string& name, std::vector<IntKey*>& keys);
+
+	Guy* ProcessGuy(IGameNode* node, const std::string& guyId);
 
 	Ribbon* GetRibbonByName(const std::string& name);
 	Ribbon* GetOrCreateRibbon(const std::string& name);
 
 	void ExtractKeys(IGameControl *gControl, std::vector<Key*>& keys);
 
+	void WritePath(XmlWriter& xml, Path* path);
+	void WriteIntKeys(XmlWriter& xml, std::vector<IntKey*>& keys);
 	void WriteStaticNodes(XmlWriter& xml, const std::vector<IGameNode*>& staticNodes);
+	void WriteGuys(XmlWriter& xml);
 
 public:
 	SGMExporter();

@@ -84,6 +84,7 @@ private:
 	void ButtonCancelPressed();
 	void ButtonExportPressed();
 	void ButtonExportScenePressed();
+	void ButtonExportSkinnedMeshPressed();
 
 	void BrowseGeometryPressed();
 	void BrowseAnimationPressed();

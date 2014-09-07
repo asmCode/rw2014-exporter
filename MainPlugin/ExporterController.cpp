@@ -147,3 +147,18 @@ void ExporterController::ExportScene(IProgressObserver *progressObserver, const 
 
 	WaitForSingleObject(hThread, INFINITE);
 }
+
+void ExporterController::ExportSkinnedMesh(IProgressObserver *progressObserver, const char *outputFilename)
+{
+	ExporterThreadData *data = new ExporterThreadData();
+	data->engineFileName = "SkinnedMeshExporter.dll";
+	data->outputFileName = outputFilename;
+	data->expInterface = expInterface;
+	data->maxInterface = maxInterface;
+	data->progressObserver = progressObserver;
+
+	DWORD threadId;
+	HANDLE hThread = CreateThread(NULL, 0, ExporterThread, data, 0, &threadId);
+
+	WaitForSingleObject(hThread, INFINITE);
+}

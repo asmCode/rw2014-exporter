@@ -62,7 +62,9 @@
 #define IDC_EXPORT2                     1042
 #define IDC_EXPORT_SCENE                1042
 #define IDC_BUTTON1                     1042
-#define IDC__EXPORT_SCENE               1042
+#define IDC_EXPORT_SCENE2               1042
+#define IDC_EXPORT_SKINNED_MESH         1043
+#define IDC__EXPORT_SCENE2              1044
 
 // Next default values for new objects
 // 

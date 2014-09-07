@@ -25,4 +25,5 @@ public:
 	void ExportPositions(IProgressObserver *progressObserver, const char *outputFilename);
 	void ExportLights(IProgressObserver *progressObserver, const char *outputFilename);
 	void ExportScene(IProgressObserver *progressObserver, const char *outputFilename);
+	void ExportSkinnedMesh(IProgressObserver *progressObserver, const char *outputFilename);
 };

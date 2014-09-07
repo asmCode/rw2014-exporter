@@ -36,6 +36,10 @@ INT_PTR CALLBACK MainFormProc(HWND hdlg, UINT message, WPARAM wparam, LPARAM lpa
 			form->ButtonExportScenePressed();
 			break;
 
+		case IDC_EXPORT_SKINNED_MESH:
+			form->ButtonExportSkinnedMeshPressed();
+			break;
+
 		case IDC_CANCEL:
 			form ->ButtonCancelPressed();
 			break;
@@ -159,6 +163,15 @@ void MainForm::ButtonExportScenePressed()
 	exporterController->ExportScene(this, "d:\\stuff\\River Wash 2014 Demo\\Code\\Data\\Scenes\\");
 
 	MessageBoxA(hwnd, "Scene", "Ready", MB_ICONINFORMATION);
+	result = MainForm::OK;
+	EndDialog(hwnd, 0);
+}
+
+void MainForm::ButtonExportSkinnedMeshPressed()
+{
+	exporterController->ExportSkinnedMesh(this, "d:\\stuff\\River Wash 2014 Demo\\Code\\Data\\SkinnedMeshes\\");
+
+	MessageBoxA(hwnd, "Skinned Meshes Exporter", "Ready", MB_ICONINFORMATION);
 	result = MainForm::OK;
 	EndDialog(hwnd, 0);
 }
