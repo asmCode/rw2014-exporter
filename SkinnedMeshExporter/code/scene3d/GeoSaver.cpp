@@ -19,8 +19,8 @@ void GeoSaver::SaveMesh(Scene3DMesh *mesh, BinaryWriter &bw)
 	bw.Write(mesh ->name);
 	bw.Write(mesh->materialName);
 
-	/*for (int i = 0; i < 16; i++)
-		bw.Write(mesh->m_worldInverseMatrix.a[i]);*/
+	for (int i = 0; i < 16; i++)
+		bw.Write(mesh->m_worldInverseMatrix.a[i]);
 
 	bw.Write((int)mesh->bonesIds.size());
 	for (int i = 0; i < (int)mesh->bonesIds.size(); i++)
