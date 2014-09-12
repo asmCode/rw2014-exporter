@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Math/Vec4.h>
+#include <Math/Vec3.h>
 #include <vector>
 
 template <typename T> class Key;
@@ -8,7 +8,8 @@ template <typename T> class Key;
 class Material
 {
 public:
-	sm::Vec4 DiffuseColor;
+	sm::Vec3 DiffuseColor;
+	float Opacity;
 	std::vector<Key<float>*> OpacityAnim;
 };
 

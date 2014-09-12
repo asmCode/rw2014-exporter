@@ -56,6 +56,7 @@ private:
 	void ProcessSceneElement(IGameNode* node);
 
 	Source* ProcessSource(IGameNode* node, const std::string& id);
+	Material* GetMaterial(IGameNode* node);
 	Destination* ProcessDestination(IGameNode* node, const std::string& id);
 	StaticSource* ProcessStaticSource(IGameNode* node, const std::string& id);
 	StaticDestination* ProcessStaticDestination(IGameNode* node, const std::string& id);
@@ -72,7 +73,7 @@ private:
 	void WritePath(XmlWriter& xml, Path* path);
 	void WriteIntKeys(XmlWriter& xml, std::vector<Key<int>*>& keys);
 	void WriteStaticNodes(XmlWriter& xml, const std::vector<IGameNode*>& staticNodes);
-	void WriteMaterial(XmlWriter& xml, IGameMaterial* material);
+	void WriteMaterial(XmlWriter& xml, Material* material);
 	void WriteGuys(XmlWriter& xml);
 
 public:
