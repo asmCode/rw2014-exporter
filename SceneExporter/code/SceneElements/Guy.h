@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-class IntKey;
+template <typename T> class Key;
 class Path;
 
 class Guy
@@ -11,5 +11,5 @@ class Guy
 public:
 	std::string Id;
 	Path* Path;
-	std::vector<IntKey*> AnimationIndex;
+	std::vector<Key<int>*> AnimationIndex;
 };

@@ -157,8 +157,9 @@
   <ItemGroup>
     <ClInclude Include="code\SceneElements\Destination.h" />
     <ClInclude Include="code\SceneElements\Guy.h" />
-    <ClInclude Include="code\SceneElements\IntKey.h" />
     <ClInclude Include="code\SceneElements\Key.h" />
+    <ClInclude Include="code\SceneElements\TransformKey.h" />
+    <ClInclude Include="code\SceneElements\Material.h" />
     <ClInclude Include="code\SceneElements\Path.h" />
     <ClInclude Include="code\SceneElements\Ribbon.h" />
     <ClInclude Include="code\SceneElements\Source.h" />

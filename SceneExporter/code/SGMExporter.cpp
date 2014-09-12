@@ -4,9 +4,10 @@
 #include "SceneElements/Source.h"
 #include "SceneElements/Destination.h"
 #include "SceneElements/Path.h"
+#include "SceneElements/TransformKey.h"
 #include "SceneElements/Key.h"
-#include "SceneElements/IntKey.h"
 #include "SceneElements/Guy.h"
+#include "SceneElements/Material.h"
 #include "SceneElements/StaticSource.h"
 #include "SceneElements/StaticDestination.h"
 
@@ -18,6 +19,13 @@
 #include <icustattribcontainer.h>
 #include <custattrib.h>
 #include <iparamb2.h>
+
+std::string Vec3ToString(const sm::Vec3& value)
+{
+	char buff[1024];
+	sprintf(buff, "%f;%f;%f", value.x, value.y, value.z);
+	return buff;
+}
 
 SGMExporter::SGMExporter()
 {
@@ -355,7 +363,7 @@ Path* SGMExporter::ProcessPath(IGameNode* node)
 	return path;
 }
 
-void SGMExporter::ProcessIntProperty(IGameNode* node, const std::string& name, std::vector<IntKey*>& keys)
+void SGMExporter::ProcessIntProperty(IGameNode* node, const std::string& name, std::vector<Key<int>*>& keys)
 {
 	IGameObject* obj = node->GetIGameObject();
 	if (obj == NULL)
@@ -381,7 +389,7 @@ void SGMExporter::ProcessIntProperty(IGameNode* node, const std::string& name, s
 	{
 		for (int i = 0; i < gKeys.Count(); i++)
 		{
-			IntKey* key = new IntKey();
+			Key<int>* key = new Key<int>();
 			key->Time = TicksToSec(gKeys[i].t);
 			key->Value = (int)gKeys[i].linearKey.fval;
 
@@ -429,7 +437,7 @@ Ribbon* SGMExporter::GetOrCreateRibbon(const std::string& name)
 	return ribbon;
 }
 
-void SGMExporter::ExtractKeys(IGameControl *gControl, std::vector<Key*>& keys)
+void SGMExporter::ExtractKeys(IGameControl *gControl, std::vector<TransformKey*>& keys)
 {
 	if (!gControl->IsAnimated(IGAME_POS))
 	{
@@ -446,7 +454,7 @@ void SGMExporter::ExtractKeys(IGameControl *gControl, std::vector<Key*>& keys)
 	{
 		for (int i = 0; i < tcbKeys.Count(); i++)
 		{
-			Key* key = new Key();
+			TransformKey* key = new TransformKey();
 
 			key->Time = TicksToSec(tcbKeys[i].t);
 			key->Position.Set(tcbKeys[i].tcbKey.pval.x, tcbKeys[i].tcbKey.pval.y, tcbKeys[i].tcbKey.pval.z);
@@ -468,7 +476,7 @@ void SGMExporter::WritePath(XmlWriter& xml, Path* path)
 
 	for (int j = 0; j < path->Keys.size(); j++)
 	{
-		Key* key = path->Keys[j];
+		TransformKey* key = path->Keys[j];
 
 		char posTxt[128];
 		char rotTxt[128];
@@ -489,7 +497,7 @@ void SGMExporter::WritePath(XmlWriter& xml, Path* path)
 	xml.CloseElement();
 }
 
-void SGMExporter::WriteIntKeys(XmlWriter& xml, std::vector<IntKey*>& keys)
+void SGMExporter::WriteIntKeys(XmlWriter& xml, std::vector<Key<int>*>& keys)
 {
 	for (int i = 0; i < keys.size(); i++)
 	{
@@ -509,9 +517,42 @@ void SGMExporter::WriteStaticNodes(XmlWriter& xml, const std::vector<IGameNode*>
 		assert(gameObject != NULL);
 
 		if (gameObject->GetIGameType() == IGameObject::IGAME_MESH)
-			xml.CreateElement("Static", "mesh_name", StringUtils::ToNarrow(node->GetName()));
+		{
+			xml.OpenElement("Static");
+			xml.WriteAttribute("mesh_name", StringUtils::ToNarrow(node->GetName()));
+
+			IGameMaterial* material = node->GetNodeMaterial();
+			if (material != NULL)
+				WriteMaterial(xml, material);
+
+			xml.CloseElement();
+		}
 
 		node->ReleaseIGameObject();
+	}
+
+	xml.CloseElement();
+}
+
+void SGMExporter::WriteMaterial(XmlWriter& xml, IGameMaterial* material)
+{
+	Point3 p3Value;
+	float fValue;
+
+	xml.OpenElement("Material");
+
+	IGameProperty* diffuse = material->GetDiffuseData();
+	if (diffuse != NULL)
+	{
+		diffuse->GetPropertyValue(p3Value);
+		xml.CreateElement("Diffuse", "value", Vec3ToString(sm::Vec3(p3Value.x, p3Value.y, p3Value.z)));
+	}
+
+	IGameProperty* opacity = material->GetOpacityData();
+	if (opacity != NULL)
+	{
+		opacity->GetPropertyValue(fValue);
+		xml.CreateElement("Opacity", "value", fValue);
 	}
 
 	xml.CloseElement();

@@ -2,11 +2,11 @@
 
 #include <vector>
 
-class Key;
+class TransformKey;
 
 class Path
 {
 public:
-	std::vector<Key*> Keys;
+	std::vector<TransformKey*> Keys;
 };
 
