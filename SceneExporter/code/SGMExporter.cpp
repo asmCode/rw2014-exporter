@@ -442,6 +442,7 @@ Guy* SGMExporter::ProcessGuy(IGameNode* node, const std::string& guyId)
 
 	guy->Id = guyId;
 	guy->Path = ProcessPath(node);
+	guy->Material = GetMaterial(node);
 
 	ProcessIntProperty(node, "anim_index", guy->AnimationIndex);
 
@@ -590,6 +591,8 @@ void SGMExporter::WriteGuys(XmlWriter& xml)
 
 		xml.OpenElement("Guy");
 		xml.WriteAttribute("id", guy->Id.c_str());
+		if (guy->Material != NULL)
+			WriteMaterial(xml, guy->Material);
 
 		if (guy->Path != NULL)
 			WritePath(xml, guy->Path);
