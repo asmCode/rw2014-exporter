@@ -19,6 +19,7 @@
 #include <icustattribcontainer.h>
 #include <custattrib.h>
 #include <iparamb2.h>
+//#include <IGame/IGameProperty.h>
 
 std::string Vec3ToString(const sm::Vec3& value)
 {
@@ -340,16 +341,23 @@ Source* SGMExporter::ProcessSource(IGameNode* node, const std::string& id)
 
 Material* SGMExporter::GetMaterial(IGameNode* node)
 {
-	IGameMaterial* igameMaterial = node->GetNodeMaterial();
-	if (igameMaterial == NULL)
-		return NULL;
-
 	Material* material = new Material();
 	material->DiffuseColor.Set(0.5f, 0.5f, 0.5f);
 	material->Opacity = 0.5f;
+	material->UseSolid = true;
+	material->UseWire = true;
+	material->SolidGlowPower = 1.0f;
+	material->SolidGlowMultiplier = 1.0f;
+	material->WireGlowPower = 1.0f;
+	material->WireGlowMultiplier = 1.0f;
+
+	IGameMaterial* igameMaterial = node->GetNodeMaterial();
+	if (igameMaterial == NULL)
+		return material;
 
 	Point3 p3Value;
 	float fValue;
+	int iValue;
 
 	IGameProperty* diffuse = igameMaterial->GetDiffuseData();
 	if (diffuse != NULL && diffuse->GetPropertyValue(p3Value))
@@ -358,6 +366,36 @@ Material* SGMExporter::GetMaterial(IGameNode* node)
 	IGameProperty* opacity = igameMaterial->GetOpacityData();
 	if (opacity != NULL && opacity->GetPropertyValue(fValue))
 		material->Opacity = fValue;
+
+	IPropertyContainer* propertyContainer = igameMaterial->GetIPropertyContainer();
+	if (propertyContainer != NULL)
+	{
+		IGameProperty* prop = NULL;
+
+		prop = propertyContainer->QueryProperty(L"use_solid");
+		if (prop != NULL && prop->GetPropertyValue(iValue))
+			material->UseSolid = (iValue != 0);
+
+		prop = propertyContainer->QueryProperty(L"use_wire");
+		if (prop != NULL && prop->GetPropertyValue(iValue))
+			material->UseWire = (iValue != 0);
+		
+		prop = propertyContainer->QueryProperty(L"solid_glow_power");
+		if (prop != NULL && prop->GetPropertyValue(fValue))
+			material->SolidGlowPower = fValue;
+
+		prop = propertyContainer->QueryProperty(L"solid_glow_multiplier");
+		if (prop != NULL && prop->GetPropertyValue(fValue))
+			material->SolidGlowMultiplier = fValue;
+
+		prop = propertyContainer->QueryProperty(L"wire_glow_power");
+		if (prop != NULL && prop->GetPropertyValue(fValue))
+			material->WireGlowPower = fValue;
+
+		prop = propertyContainer->QueryProperty(L"wire_glow_multiplier");
+		if (prop != NULL && prop->GetPropertyValue(fValue))
+			material->WireGlowMultiplier = fValue;
+	}
 
 	return material;
 }
@@ -397,6 +435,11 @@ Path* SGMExporter::ProcessPath(IGameNode* node)
 		ExtractKeys(gControl, path->Keys);
 
 	node->ReleaseIGameObject();
+
+	float spread = 1.0f;
+	GetPropertyFloat(node, "radius", spread);
+
+	path->Spread = spread;
 
 	return path;
 }
@@ -512,6 +555,7 @@ void SGMExporter::ExtractKeys(IGameControl *gControl, std::vector<TransformKey*>
 void SGMExporter::WritePath(XmlWriter& xml, Path* path)
 {
 	xml.OpenElement("Path");
+	xml.WriteAttribute("spread", path->Spread);
 
 	for (int j = 0; j < path->Keys.size(); j++)
 	{
@@ -578,6 +622,12 @@ void SGMExporter::WriteMaterial(XmlWriter& xml, Material* material)
 	xml.OpenElement("Material");
 	xml.CreateElement("Diffuse", "value", Vec3ToString(material->DiffuseColor));
 	xml.CreateElement("Opacity", "value", material->Opacity);
+	xml.CreateElement("UseSolid", "value", material->UseSolid);
+	xml.CreateElement("UseWire", "value", material->UseWire);
+	xml.CreateElement("SolidGlowPower", "value", material->SolidGlowPower);
+	xml.CreateElement("SolidGlowMultiplier", "value", material->SolidGlowMultiplier);
+	xml.CreateElement("WireGlowPower", "value", material->WireGlowPower);
+	xml.CreateElement("WireGlowMultiplier", "value", material->WireGlowMultiplier);
 	xml.CloseElement();
 }
 
@@ -605,4 +655,38 @@ void SGMExporter::WriteGuys(XmlWriter& xml)
 	}
 
 	xml.CloseElement();
+}
+
+bool SGMExporter::GetPropertyFloat(IGameNode* node, const std::string& name, float& value)
+{
+	IGameObject *gameObject = node->GetIGameObject();
+	gameObject->InitializeData();
+	if (gameObject == NULL)
+	{
+		return false;
+	}
+
+	if (gameObject->GetIGameType() != IGameObject::IGAME_MESH)
+	{
+		node->ReleaseIGameObject();
+		return false;
+	}
+
+	IPropertyContainer* propCont = gameObject->GetIPropertyContainer();
+	if (propCont == NULL)
+	{
+		node->ReleaseIGameObject();
+		return false;
+	}
+
+	IGameProperty* prop = propCont->QueryProperty(StringUtils::ToWide(name).c_str());
+	if (prop == NULL || !prop->GetPropertyValue(value))
+	{
+		node->ReleaseIGameObject();
+		return false;
+	}
+	
+	node->ReleaseIGameObject();
+
+	return true;
 }
