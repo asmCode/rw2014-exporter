@@ -9,4 +9,5 @@ class Destination
 public:
 	std::string MeshName;
 	Material* Material;
+	bool Stay;
 };

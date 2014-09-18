@@ -120,6 +120,7 @@ bool SGMExporter::DoExport(const TCHAR *name, ExpInterface *ei, Interface *max_i
 		{
 			xmlWriter.OpenElement("Destination");
 			xmlWriter.WriteAttribute<const char*>("mesh_name", it->second->Destination->MeshName.c_str());
+			xmlWriter.WriteAttribute<bool>("stay", it->second->Destination->Stay);
 			if (it->second->Destination->Material != NULL)
 				WriteMaterial(xmlWriter, it->second->Destination->Material);
 			xmlWriter.CloseElement();
@@ -405,6 +406,13 @@ Destination* SGMExporter::ProcessDestination(IGameNode* node, const std::string&
 	Destination* destination = new Destination();
 	destination->MeshName = StringUtils::ToNarrow(node->GetName());
 	destination->Material = GetMaterial(node);
+	destination->Stay = false;
+
+	bool stay;
+	GetPropertyBool(node, "stay", stay);
+
+	destination->Stay = stay;
+
 	return destination;
 }
 
@@ -439,7 +447,15 @@ Path* SGMExporter::ProcessPath(IGameNode* node)
 	float spread = 1.0f;
 	GetPropertyFloat(node, "radius", spread);
 
+	float triangle_scale = 0.5f;
+	GetPropertyFloat(node, "triangle_scale", triangle_scale);
+
+	float delay = 4.0f;
+	GetPropertyFloat(node, "delay", delay);
+
 	path->Spread = spread;
+	path->TriangleScale = triangle_scale;
+	path->Delay = delay;
 
 	return path;
 }
@@ -556,6 +572,8 @@ void SGMExporter::WritePath(XmlWriter& xml, Path* path)
 {
 	xml.OpenElement("Path");
 	xml.WriteAttribute("spread", path->Spread);
+	xml.WriteAttribute("triangle_scale", path->TriangleScale);
+	xml.WriteAttribute("delay", path->Delay);
 
 	for (int j = 0; j < path->Keys.size(); j++)
 	{
@@ -657,35 +675,56 @@ void SGMExporter::WriteGuys(XmlWriter& xml)
 	xml.CloseElement();
 }
 
-bool SGMExporter::GetPropertyFloat(IGameNode* node, const std::string& name, float& value)
+IGameProperty* SGMExporter::GetProperty(IGameNode* node, const std::string& name)
 {
 	IGameObject *gameObject = node->GetIGameObject();
 	gameObject->InitializeData();
 	if (gameObject == NULL)
-	{
-		return false;
-	}
+		return NULL;
 
 	if (gameObject->GetIGameType() != IGameObject::IGAME_MESH)
 	{
 		node->ReleaseIGameObject();
-		return false;
+		return NULL;
 	}
 
 	IPropertyContainer* propCont = gameObject->GetIPropertyContainer();
 	if (propCont == NULL)
 	{
 		node->ReleaseIGameObject();
-		return false;
+		return NULL;
 	}
 
-	IGameProperty* prop = propCont->QueryProperty(StringUtils::ToWide(name).c_str());
+	return propCont->QueryProperty(StringUtils::ToWide(name).c_str());
+}
+
+bool SGMExporter::GetPropertyFloat(IGameNode* node, const std::string& name, float& value)
+{
+	IGameProperty* prop = GetProperty(node, name);
 	if (prop == NULL || !prop->GetPropertyValue(value))
 	{
 		node->ReleaseIGameObject();
 		return false;
 	}
 	
+	node->ReleaseIGameObject();
+
+	return true;
+}
+
+bool SGMExporter::GetPropertyBool(IGameNode* node, const std::string& name, bool& value)
+{
+	int iValue = 0;
+
+	IGameProperty* prop = GetProperty(node, name);
+	if (prop == NULL || !prop->GetPropertyValue(iValue))
+	{
+		node->ReleaseIGameObject();
+		return false;
+	}
+
+	value = iValue != 0;
+
 	node->ReleaseIGameObject();
 
 	return true;

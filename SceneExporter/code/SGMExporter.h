@@ -76,7 +76,9 @@ private:
 	void WriteMaterial(XmlWriter& xml, Material* material);
 	void WriteGuys(XmlWriter& xml);
 
+	IGameProperty* GetProperty(IGameNode* node, const std::string& name);
 	bool GetPropertyFloat(IGameNode* node, const std::string& name, float& value);
+	bool GetPropertyBool(IGameNode* node, const std::string& name, bool& value);
 
 public:
 	SGMExporter();

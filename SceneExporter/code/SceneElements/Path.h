@@ -9,5 +9,7 @@ class Path
 public:
 	std::vector<TransformKey*> Keys;
 	float Spread;
+	float TriangleScale;
+	float Delay;
 };
 
