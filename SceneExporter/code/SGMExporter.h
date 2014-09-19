@@ -79,6 +79,7 @@ private:
 	IGameProperty* GetProperty(IGameNode* node, const std::string& name);
 	bool GetPropertyFloat(IGameNode* node, const std::string& name, float& value);
 	bool GetPropertyBool(IGameNode* node, const std::string& name, bool& value);
+	bool GetPropertyInt(IGameNode* node, const std::string& name, int& value);
 
 public:
 	SGMExporter();

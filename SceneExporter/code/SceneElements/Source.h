@@ -9,4 +9,6 @@ class Source
 public:
 	std::string MeshName;
 	Material* Material;
+	bool Destroy;
+	bool Stay;
 };

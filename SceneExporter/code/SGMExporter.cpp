@@ -110,6 +110,8 @@ bool SGMExporter::DoExport(const TCHAR *name, ExpInterface *ei, Interface *max_i
 		{
 			xmlWriter.OpenElement("Source");
 			xmlWriter.WriteAttribute<const char*>("mesh_name", it->second->Source->MeshName.c_str());
+			xmlWriter.WriteAttribute<bool>("destroy", it->second->Source->Destroy);
+			xmlWriter.WriteAttribute<bool>("stay", it->second->Source->Stay);
 			if (it->second->Source->Material != NULL)
 				WriteMaterial(xmlWriter, it->second->Source->Material);
 
@@ -336,6 +338,16 @@ Source* SGMExporter::ProcessSource(IGameNode* node, const std::string& id)
 	Source* source = new Source();
 	source->MeshName = StringUtils::ToNarrow(node->GetName());
 	source->Material = GetMaterial(node);
+	source->Destroy = false;
+	source->Stay = false;
+
+	bool destroy = false;
+	GetPropertyBool(node, "destroy", destroy);
+	source->Destroy = destroy;
+
+	bool stay = false;
+	GetPropertyBool(node, "stay", stay);
+	source->Stay = stay;
 
 	return source;
 }
@@ -408,7 +420,7 @@ Destination* SGMExporter::ProcessDestination(IGameNode* node, const std::string&
 	destination->Material = GetMaterial(node);
 	destination->Stay = false;
 
-	bool stay;
+	bool stay = false;;
 	GetPropertyBool(node, "stay", stay);
 
 	destination->Stay = stay;
@@ -622,6 +634,10 @@ void SGMExporter::WriteStaticNodes(XmlWriter& xml, const std::vector<IGameNode*>
 			xml.OpenElement("Static");
 			xml.WriteAttribute("mesh_name", StringUtils::ToNarrow(node->GetName()));
 
+			int order = 0;
+			if (GetPropertyInt(node, "order", order))
+				xml.WriteAttribute("order", order);
+
 			Material* material = GetMaterial(node);
 			if (material != NULL)
 				WriteMaterial(xml, material);
@@ -724,6 +740,20 @@ bool SGMExporter::GetPropertyBool(IGameNode* node, const std::string& name, bool
 	}
 
 	value = iValue != 0;
+
+	node->ReleaseIGameObject();
+
+	return true;
+}
+
+bool SGMExporter::GetPropertyInt(IGameNode* node, const std::string& name, int& value)
+{
+	IGameProperty* prop = GetProperty(node, name);
+	if (prop == NULL || !prop->GetPropertyValue(value))
+	{
+		node->ReleaseIGameObject();
+		return false;
+	}
 
 	node->ReleaseIGameObject();
 
