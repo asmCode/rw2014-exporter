@@ -62,6 +62,7 @@ private:
 	StaticDestination* ProcessStaticDestination(IGameNode* node, const std::string& id);
 	Path* ProcessPath(IGameNode* node);
 	void ProcessIntProperty(IGameNode* node, const std::string& name, std::vector<Key<int>*>& keys);
+	void ProcessFloatProperty(IGameNode* node, const std::string& name, std::vector<Key<float>*>& keys);
 
 	Guy* ProcessGuy(IGameNode* node, const std::string& guyId);
 
@@ -72,6 +73,7 @@ private:
 
 	void WritePath(XmlWriter& xml, Path* path);
 	void WriteIntKeys(XmlWriter& xml, std::vector<Key<int>*>& keys);
+	void WriteFloatKeys(XmlWriter& xml, std::vector<Key<float>*>& keys);
 	void WriteStaticNodes(XmlWriter& xml, const std::vector<IGameNode*>& staticNodes);
 	void WriteMaterial(XmlWriter& xml, Material* material);
 	void WriteGuys(XmlWriter& xml);
@@ -80,6 +82,7 @@ private:
 	bool GetPropertyFloat(IGameNode* node, const std::string& name, float& value);
 	bool GetPropertyBool(IGameNode* node, const std::string& name, bool& value);
 	bool GetPropertyInt(IGameNode* node, const std::string& name, int& value);
+	bool GetPropertyString(IGameNode* node, const std::string& name, std::string& value);
 
 public:
 	SGMExporter();

@@ -465,9 +465,15 @@ Path* SGMExporter::ProcessPath(IGameNode* node)
 	float delay = 4.0f;
 	GetPropertyFloat(node, "delay", delay);
 
+	bool dontRender = false;
+	GetPropertyBool(node, "dont_render", dontRender);
+
+	ProcessFloatProperty(node, "ribbon_weight", path->RibbonWeights);
+
 	path->Spread = spread;
 	path->TriangleScale = triangle_scale;
 	path->Delay = delay;
+	path->DontRender = dontRender;
 
 	return path;
 }
@@ -507,6 +513,41 @@ void SGMExporter::ProcessIntProperty(IGameNode* node, const std::string& name, s
 	}
 }
 
+void SGMExporter::ProcessFloatProperty(IGameNode* node, const std::string& name, std::vector<Key<float>*>& keys)
+{
+	IGameObject* obj = node->GetIGameObject();
+	if (obj == NULL)
+		return;
+
+	IPropertyContainer* propsCointainer = obj->GetIPropertyContainer();
+	if (propsCointainer == NULL)
+		return;
+
+	IGameProperty *property = propsCointainer->QueryProperty(StringUtils::ToWide(name).c_str());
+	if (property == NULL)
+		return;
+
+	if (!property->IsPropAnimated())
+		return;
+
+	IGameControl *ctrl = property->GetIGameControl();
+	if (ctrl == NULL)
+		return;
+
+	IGameKeyTab gKeys;
+	if (ctrl->GetTCBKeys(gKeys, IGAME_FLOAT))
+	{
+		for (int i = 0; i < gKeys.Count(); i++)
+		{
+			Key<float>* key = new Key<float>();
+			key->Time = TicksToSec(gKeys[i].t);
+			key->Value = gKeys[i].tcbKey.fval;
+
+			keys.push_back(key);
+		}
+	}
+}
+
 Guy* SGMExporter::ProcessGuy(IGameNode* node, const std::string& guyId)
 {
 	Guy* guy = new Guy();
@@ -514,6 +555,10 @@ Guy* SGMExporter::ProcessGuy(IGameNode* node, const std::string& guyId)
 	guy->Id = guyId;
 	guy->Path = ProcessPath(node);
 	guy->Material = GetMaterial(node);
+
+	std::string ribbonName;
+	GetPropertyString(node, "ribbon", ribbonName);
+	guy->RibbonName = ribbonName;
 
 	ProcessIntProperty(node, "anim_index", guy->AnimationIndex);
 
@@ -586,6 +631,15 @@ void SGMExporter::WritePath(XmlWriter& xml, Path* path)
 	xml.WriteAttribute("spread", path->Spread);
 	xml.WriteAttribute("triangle_scale", path->TriangleScale);
 	xml.WriteAttribute("delay", path->Delay);
+	if (path->DontRender)
+		xml.WriteAttribute("dont_render", path->DontRender);
+
+	if (path->RibbonWeights.size() > 0)
+	{
+		xml.OpenElement("RibbonWeights");
+		WriteFloatKeys(xml, path->RibbonWeights);
+		xml.CloseElement();
+	}
 
 	for (int j = 0; j < path->Keys.size(); j++)
 	{
@@ -611,6 +665,14 @@ void SGMExporter::WritePath(XmlWriter& xml, Path* path)
 }
 
 void SGMExporter::WriteIntKeys(XmlWriter& xml, std::vector<Key<int>*>& keys)
+{
+	for (int i = 0; i < keys.size(); i++)
+	{
+		xml.CreateElement("Key", "time", keys[i]->Time, "value", keys[i]->Value);
+	}
+}
+
+void SGMExporter::WriteFloatKeys(XmlWriter& xml, std::vector<Key<float>*>& keys)
 {
 	for (int i = 0; i < keys.size(); i++)
 	{
@@ -675,6 +737,10 @@ void SGMExporter::WriteGuys(XmlWriter& xml)
 
 		xml.OpenElement("Guy");
 		xml.WriteAttribute("id", guy->Id.c_str());
+
+		if (guy->RibbonName.size() > 0)
+			xml.WriteAttribute("ribbon_name", guy->RibbonName.c_str());
+
 		if (guy->Material != NULL)
 			WriteMaterial(xml, guy->Material);
 
@@ -754,6 +820,28 @@ bool SGMExporter::GetPropertyInt(IGameNode* node, const std::string& name, int& 
 		node->ReleaseIGameObject();
 		return false;
 	}
+
+	node->ReleaseIGameObject();
+
+	return true;
+}
+
+bool SGMExporter::GetPropertyString(IGameNode* node, const std::string& name, std::string& value)
+{
+	wchar_t *sValue;
+
+	IGameProperty* prop = GetProperty(node, name);
+	if (prop == NULL || !prop->GetPropertyValue((const wchar_t*&)sValue))
+	{
+		node->ReleaseIGameObject();
+		return false;
+	}
+
+	Log::LogT("0=%c", sValue[0]);
+	Log::LogT("1=%c", sValue[1]);
+	Log::LogT("2=%c", sValue[2]);
+	
+	value = StringUtils::ToNarrow(sValue);
 
 	node->ReleaseIGameObject();
 

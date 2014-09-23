@@ -3,6 +3,7 @@
 #include <vector>
 
 class TransformKey;
+template <typename T> class Key;
 
 class Path
 {
@@ -11,5 +12,7 @@ public:
 	float Spread;
 	float TriangleScale;
 	float Delay;
+	std::vector<Key<float>*> RibbonWeights;
+	bool DontRender;
 };
 

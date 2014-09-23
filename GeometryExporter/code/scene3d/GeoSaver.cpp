@@ -78,7 +78,10 @@ void GeoSaver::SaveMeshPart(Scene3DMeshPart *meshPart, BinaryWriter &bw)
 
 void GeoSaver::SaveProperties(Scene3DMesh *mesh, BinaryWriter &bw)
 {
-	bw.Write((int)mesh->properties.size());
+	//bw.Write((int)mesh->properties.size());
+
+	bw.Write((int)0);
+	return;
 
 	for (unsigned i = 0; i < mesh->properties.size(); i++)
 		SaveProperty(mesh->properties[i], bw);

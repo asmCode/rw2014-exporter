@@ -14,4 +14,5 @@ public:
 	Material* Material;
 	Path* Path;
 	std::vector<Key<int>*> AnimationIndex;
+	std::string RibbonName;
 };
