@@ -5,13 +5,12 @@
 
 template <typename T> class Key;
 class Path;
-class Material;
 
 class Guy
 {
 public:
 	std::string Id;
-	Material* Material;
+	std::string MaterialName;
 	Path* Path;
 	std::vector<Key<int>*> AnimationIndex;
 	std::string RibbonName;

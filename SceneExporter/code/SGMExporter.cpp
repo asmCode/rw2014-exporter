@@ -112,9 +112,7 @@ bool SGMExporter::DoExport(const TCHAR *name, ExpInterface *ei, Interface *max_i
 			xmlWriter.WriteAttribute<const char*>("mesh_name", it->second->Source->MeshName.c_str());
 			xmlWriter.WriteAttribute<bool>("destroy", it->second->Source->Destroy);
 			xmlWriter.WriteAttribute<bool>("stay", it->second->Source->Stay);
-			if (it->second->Source->Material != NULL)
-				WriteMaterial(xmlWriter, it->second->Source->Material);
-
+			WriteMaterialAttribIfExist(xmlWriter, it->second->Source->MaterialName);
 			xmlWriter.CloseElement();
 		}
 
@@ -123,8 +121,7 @@ bool SGMExporter::DoExport(const TCHAR *name, ExpInterface *ei, Interface *max_i
 			xmlWriter.OpenElement("Destination");
 			xmlWriter.WriteAttribute<const char*>("mesh_name", it->second->Destination->MeshName.c_str());
 			xmlWriter.WriteAttribute<bool>("stay", it->second->Destination->Stay);
-			if (it->second->Destination->Material != NULL)
-				WriteMaterial(xmlWriter, it->second->Destination->Material);
+			WriteMaterialAttribIfExist(xmlWriter, it->second->Destination->MaterialName);
 			xmlWriter.CloseElement();
 		}
 
@@ -132,8 +129,7 @@ bool SGMExporter::DoExport(const TCHAR *name, ExpInterface *ei, Interface *max_i
 		{
 			xmlWriter.OpenElement("StaticSource");
 			xmlWriter.WriteAttribute<const char*>("mesh_name", it->second->StaticSource->MeshName.c_str());
-			if (it->second->StaticSource->Material != NULL)
-				WriteMaterial(xmlWriter, it->second->StaticSource->Material);
+			WriteMaterialAttribIfExist(xmlWriter, it->second->StaticSource->MaterialName);
 			xmlWriter.CloseElement();
 		}
 
@@ -141,8 +137,7 @@ bool SGMExporter::DoExport(const TCHAR *name, ExpInterface *ei, Interface *max_i
 		{
 			xmlWriter.OpenElement("StaticDestination");
 			xmlWriter.WriteAttribute<const char*>("mesh_name", it->second->StaticDestination->MeshName.c_str());
-			if (it->second->StaticDestination->Material != NULL)
-				WriteMaterial(xmlWriter, it->second->StaticDestination->Material);
+			WriteMaterialAttribIfExist(xmlWriter, it->second->StaticDestination->MaterialName);
 			xmlWriter.CloseElement();
 		}
 
@@ -162,6 +157,7 @@ bool SGMExporter::DoExport(const TCHAR *name, ExpInterface *ei, Interface *max_i
 
 	WriteStaticNodes(xmlWriter, staticNodes);
 	WriteGuys(xmlWriter);
+	WriteMaterials(xmlWriter);
 
 	xmlWriter.CloseElement(); // Scene
 
@@ -337,7 +333,7 @@ Source* SGMExporter::ProcessSource(IGameNode* node, const std::string& id)
 {
 	Source* source = new Source();
 	source->MeshName = StringUtils::ToNarrow(node->GetName());
-	source->Material = GetMaterial(node);
+	source->MaterialName = GetMaterial(node);
 	source->Destroy = false;
 	source->Stay = false;
 
@@ -352,9 +348,29 @@ Source* SGMExporter::ProcessSource(IGameNode* node, const std::string& id)
 	return source;
 }
 
-Material* SGMExporter::GetMaterial(IGameNode* node)
+bool SGMExporter::IsMaterialCollected(const std::string& name)
 {
+	return m_materials.find(name) != m_materials.end();
+}
+
+void SGMExporter::CollectMaterial(Material* material)
+{
+	m_materials[material->Name] = material;
+}
+
+std::string SGMExporter::GetMaterial(IGameNode* node)
+{
+	IGameMaterial* igameMaterial = node->GetNodeMaterial();
+	if (igameMaterial == NULL)
+		return "";
+
+	std::string name = StringUtils::ToNarrow(igameMaterial->GetMaterialName());
+
+	if (IsMaterialCollected(name))
+		return name;
+
 	Material* material = new Material();
+	material->Name = name;
 	material->DiffuseColor.Set(0.5f, 0.5f, 0.5f);
 	material->Opacity = 0.5f;
 	material->UseSolid = true;
@@ -363,10 +379,6 @@ Material* SGMExporter::GetMaterial(IGameNode* node)
 	material->SolidGlowMultiplier = 1.0f;
 	material->WireGlowPower = 1.0f;
 	material->WireGlowMultiplier = 1.0f;
-
-	IGameMaterial* igameMaterial = node->GetNodeMaterial();
-	if (igameMaterial == NULL)
-		return material;
 
 	Point3 p3Value;
 	float fValue;
@@ -410,14 +422,16 @@ Material* SGMExporter::GetMaterial(IGameNode* node)
 			material->WireGlowMultiplier = fValue;
 	}
 
-	return material;
+	CollectMaterial(material);
+
+	return name;
 }
 
 Destination* SGMExporter::ProcessDestination(IGameNode* node, const std::string& id)
 {
 	Destination* destination = new Destination();
 	destination->MeshName = StringUtils::ToNarrow(node->GetName());
-	destination->Material = GetMaterial(node);
+	destination->MaterialName = GetMaterial(node);
 	destination->Stay = false;
 
 	bool stay = false;;
@@ -432,7 +446,7 @@ StaticSource* SGMExporter::ProcessStaticSource(IGameNode* node, const std::strin
 {
 	StaticSource* source = new StaticSource();
 	source->MeshName = StringUtils::ToNarrow(node->GetName());
-	source->Material = GetMaterial(node);
+	source->MaterialName = GetMaterial(node);
 	return source;
 }
 
@@ -440,7 +454,7 @@ StaticDestination* SGMExporter::ProcessStaticDestination(IGameNode* node, const 
 {
 	StaticDestination* destination = new StaticDestination();
 	destination->MeshName = StringUtils::ToNarrow(node->GetName());
-	destination->Material = GetMaterial(node);
+	destination->MaterialName = GetMaterial(node);
 	return destination;
 }
 
@@ -554,7 +568,7 @@ Guy* SGMExporter::ProcessGuy(IGameNode* node, const std::string& guyId)
 
 	guy->Id = guyId;
 	guy->Path = ProcessPath(node);
-	guy->Material = GetMaterial(node);
+	guy->MaterialName = GetMaterial(node);
 
 	std::string ribbonName;
 	GetPropertyString(node, "ribbon", ribbonName);
@@ -623,6 +637,16 @@ void SGMExporter::ExtractKeys(IGameControl *gControl, std::vector<TransformKey*>
 	{
 		Log::LogT("No TCB Keys");
 	}
+}
+
+void SGMExporter::WriteMaterials(XmlWriter& xml)
+{
+	xml.OpenElement("Materials");
+
+	for (MaterialsMap::iterator it = m_materials.begin(); it != m_materials.end(); it++)
+		WriteMaterial(xml, it->second);
+
+	xml.CloseElement();
 }
 
 void SGMExporter::WritePath(XmlWriter& xml, Path* path)
@@ -700,9 +724,8 @@ void SGMExporter::WriteStaticNodes(XmlWriter& xml, const std::vector<IGameNode*>
 			if (GetPropertyInt(node, "order", order))
 				xml.WriteAttribute("order", order);
 
-			Material* material = GetMaterial(node);
-			if (material != NULL)
-				WriteMaterial(xml, material);
+			std::string materialName = GetMaterial(node);
+			WriteMaterialAttribIfExist(xml, materialName);
 
 			xml.CloseElement();
 		}
@@ -716,6 +739,7 @@ void SGMExporter::WriteStaticNodes(XmlWriter& xml, const std::vector<IGameNode*>
 void SGMExporter::WriteMaterial(XmlWriter& xml, Material* material)
 {
 	xml.OpenElement("Material");
+	xml.CreateElement("Name", "value", material->Name);
 	xml.CreateElement("Diffuse", "value", Vec3ToString(material->DiffuseColor));
 	xml.CreateElement("Opacity", "value", material->Opacity);
 	xml.CreateElement("UseSolid", "value", material->UseSolid);
@@ -741,8 +765,7 @@ void SGMExporter::WriteGuys(XmlWriter& xml)
 		if (guy->RibbonName.size() > 0)
 			xml.WriteAttribute("ribbon_name", guy->RibbonName.c_str());
 
-		if (guy->Material != NULL)
-			WriteMaterial(xml, guy->Material);
+		WriteMaterialAttribIfExist(xml, guy->MaterialName);
 
 		if (guy->Path != NULL)
 			WritePath(xml, guy->Path);
@@ -755,6 +778,12 @@ void SGMExporter::WriteGuys(XmlWriter& xml)
 	}
 
 	xml.CloseElement();
+}
+
+void SGMExporter::WriteMaterialAttribIfExist(XmlWriter& xml, const std::string& materialName)
+{
+	if (materialName.size() > 0)
+		xml.WriteAttribute<const char*>("material_name", materialName.c_str());
 }
 
 IGameProperty* SGMExporter::GetProperty(IGameNode* node, const std::string& name)
@@ -836,10 +865,6 @@ bool SGMExporter::GetPropertyString(IGameNode* node, const std::string& name, st
 		node->ReleaseIGameObject();
 		return false;
 	}
-
-	Log::LogT("0=%c", sValue[0]);
-	Log::LogT("1=%c", sValue[1]);
-	Log::LogT("2=%c", sValue[2]);
 	
 	value = StringUtils::ToNarrow(sValue);
 

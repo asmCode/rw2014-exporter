@@ -2,12 +2,14 @@
 
 #include <Math/Vec3.h>
 #include <vector>
+#include <string>
 
 template <typename T> class Key;
 
 class Material
 {
 public:
+	std::string Name;
 	sm::Vec3 DiffuseColor;
 	float Opacity;
 	bool UseSolid;

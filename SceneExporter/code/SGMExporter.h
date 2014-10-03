@@ -29,6 +29,7 @@ class SGMExporter : public IExportInterface
 {
 private:
 	typedef std::map<std::string, Ribbon*> RibbonsMap;
+	typedef std::map<std::string, Material*> MaterialsMap;
 
 	std::vector<IProgressObserver*> observers;
 	std::string fileName;
@@ -45,6 +46,7 @@ private:
 
 	RibbonsMap m_ribbons;
 	std::vector<Guy*> m_guys;
+	MaterialsMap m_materials;
 
 	void AddToRibbon(const std::string& name, Source* source);
 	void AddToRibbon(const std::string& name, Destination* destination);
@@ -56,7 +58,7 @@ private:
 	void ProcessSceneElement(IGameNode* node);
 
 	Source* ProcessSource(IGameNode* node, const std::string& id);
-	Material* GetMaterial(IGameNode* node);
+	std::string GetMaterial(IGameNode* node);
 	Destination* ProcessDestination(IGameNode* node, const std::string& id);
 	StaticSource* ProcessStaticSource(IGameNode* node, const std::string& id);
 	StaticDestination* ProcessStaticDestination(IGameNode* node, const std::string& id);
@@ -68,15 +70,19 @@ private:
 
 	Ribbon* GetRibbonByName(const std::string& name);
 	Ribbon* GetOrCreateRibbon(const std::string& name);
+	bool IsMaterialCollected(const std::string& name);
+	void CollectMaterial(Material* material);
 
 	void ExtractKeys(IGameControl *gControl, std::vector<TransformKey*>& keys);
 
+	void WriteMaterials(XmlWriter& xml);
 	void WritePath(XmlWriter& xml, Path* path);
 	void WriteIntKeys(XmlWriter& xml, std::vector<Key<int>*>& keys);
 	void WriteFloatKeys(XmlWriter& xml, std::vector<Key<float>*>& keys);
 	void WriteStaticNodes(XmlWriter& xml, const std::vector<IGameNode*>& staticNodes);
 	void WriteMaterial(XmlWriter& xml, Material* material);
 	void WriteGuys(XmlWriter& xml);
+	void WriteMaterialAttribIfExist(XmlWriter& xml, const std::string& materialName);
 
 	IGameProperty* GetProperty(IGameNode* node, const std::string& name);
 	bool GetPropertyFloat(IGameNode* node, const std::string& name, float& value);

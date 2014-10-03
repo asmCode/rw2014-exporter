@@ -2,13 +2,11 @@
 
 #include <string>
 
-class Material;
-
 class Source
 {
 public:
 	std::string MeshName;
-	Material* Material;
+	std::string MaterialName;
 	bool Destroy;
 	bool Stay;
 };
